@@ -1,5 +1,4 @@
 <?php
-
   header('Access-Control-Allow-Origin: *');
   header("Access-Control-Allow-Credentials: true");
   header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -19,12 +18,32 @@
   		desc_customer = '$postjson[desc_customer]',
   		created_at	  = '$today' ,
       latitud_monumento = '$postjson[latitud_monumento]',
-      longitud_monumento = '$postjson[longitud_monumento]'
+      longitud_monumento = '$postjson[longitud_monumento]',
+      tipo_user = '$postjson[tipo_user]',
+      email = '$postjson[email]',
   	");
 
   	$idcust = mysqli_insert_id($mysqli);
 
   	if($query) $result = json_encode(array('success'=>true, 'customerid'=>$idcust));
+  	else $result = json_encode(array('success'=>false));
+
+  	echo $result;
+
+  }
+  elseif($postjson['aksi']=='getdata2'){
+  	$data = array();
+  	$query = mysqli_query($mysqli, "SELECT * FROM master_user WHERE email='$postjson[email]' AND tipo_user='$postjson[tipo_user]'");
+
+  	while($row = mysqli_fetch_array($query)){
+
+  		$data[] = array(
+  			'email' => $row['email'],
+  			'tipo_user' => $row['tipo_user']
+  		);
+  	}
+
+  	if($query) $result = json_encode(array('success'=>true, 'result'=>$data));
   	else $result = json_encode(array('success'=>false));
 
   	echo $result;
@@ -43,8 +62,8 @@
   			'desc_customer' => $row['desc_customer'],
         'created_at' => $row['created_at'],
         'latitud_monumento' =>$row['latitud_monumento'],
-        'longitud_monumento' =>$row['longitud_monumento']
-
+        'longitud_monumento' =>$row['longitud_monumento'],
+        'tipo_user' =>$row['tipo_user']
   		);
   	}
 
@@ -81,14 +100,15 @@
 
   elseif($postjson['aksi']=="login"){
     $password = md5($postjson['password']);
-    $query = mysqli_query($mysqli, "SELECT * FROM master_user WHERE email='$postjson[email]' AND password='$password'");
+    $query = mysqli_query($mysqli, "SELECT * FROM master_user WHERE email='$postjson[email]' AND password='$password' AND tipo_user='$postjson[tipo_user]'");
     $check = mysqli_num_rows($query);
 
     if($check>0){
       $data = mysqli_fetch_array($query);
       $datauser = array(
         'email' => $data['email'],
-        'password' => $data['password']
+        'password' => $data['password'],
+        'tipo_user' => $data['tipo_user']
       );
 
       if($data['status']=='y'){
@@ -111,7 +131,9 @@
       username = '$postjson[username]',
       password = '$password',
       status   = 'y',
-      created_at = '$today'
+      created_at = '$today',
+      tipo_user = '$postjson[tipo_user]'
+
     ");
 
     if($query) $result = json_encode(array('success'=>true));
